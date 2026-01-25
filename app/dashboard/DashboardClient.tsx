@@ -44,8 +44,8 @@ export default function DashboardClient({ initialEntries, userEmail }: Dashboard
           <Image
             src="/logo.jpg"
             alt="Lokoya Logo"
-            width={80}
-            height={80}
+            width={160}
+            height={160}
             className="rounded"
           />
           <div className="flex items-center gap-4">
