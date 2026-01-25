@@ -16,6 +16,7 @@ interface DashboardClientProps {
 export default function DashboardClient({ initialEntries, userEmail }: DashboardClientProps) {
   const [entries, setEntries] = useState<Entry[]>(initialEntries);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -61,12 +62,17 @@ export default function DashboardClient({ initialEntries, userEmail }: Dashboard
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <EntryForm onEntryAdded={refreshEntries} />
+        <EntryForm
+          onEntryAdded={refreshEntries}
+          editingEntry={editingEntry}
+          onCancelEdit={() => setEditingEntry(null)}
+        />
         <SearchBar value={searchQuery} onChange={setSearchQuery} />
         <EntryList
           entries={entries}
           searchQuery={searchQuery}
           onEntryDeleted={refreshEntries}
+          onEditEntry={setEditingEntry}
         />
       </main>
     </div>

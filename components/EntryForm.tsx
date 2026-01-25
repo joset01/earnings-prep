@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { generateEarningsPeriods } from "@/lib/parseEntry";
+import { Entry } from "./EntryList";
 
 interface EntryFormProps {
   onEntryAdded: () => void;
+  editingEntry?: Entry | null;
+  onCancelEdit?: () => void;
 }
 
 const FLAG_OPTIONS = [
@@ -15,7 +18,7 @@ const FLAG_OPTIONS = [
   { value: "red", label: "🟥 Red" },
 ];
 
-export default function EntryForm({ onEntryAdded }: EntryFormProps) {
+export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: EntryFormProps) {
   const [ticker, setTicker] = useState("");
   const [entryDate, setEntryDate] = useState("");
   const [source, setSource] = useState("");
@@ -26,6 +29,35 @@ export default function EntryForm({ onEntryAdded }: EntryFormProps) {
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
   const periods = generateEarningsPeriods();
+
+  const isEditing = !!editingEntry;
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editingEntry) {
+      setTicker(editingEntry.ticker);
+      setEntryDate(editingEntry.entry_date);
+      setSource(editingEntry.source || "");
+      setNote(editingEntry.note);
+      setFlag(editingEntry.flag || "");
+      setPeriod(editingEntry.earnings_period);
+    }
+  }, [editingEntry]);
+
+  const clearForm = () => {
+    setTicker("");
+    setEntryDate("");
+    setSource("");
+    setNote("");
+    setFlag("");
+    setPeriod("");
+    setError(null);
+  };
+
+  const handleCancel = () => {
+    clearForm();
+    onCancelEdit?.();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,24 +92,38 @@ export default function EntryForm({ onEntryAdded }: EntryFormProps) {
       return;
     }
 
-    const { error: insertError } = await supabase.from("entries").insert({
-      user_id: user.id,
+    const entryData = {
       ticker: ticker.toUpperCase().trim(),
       entry_date: entryDate,
       source: source.trim() || null,
       note: note.trim(),
       flag: flag || null,
       earnings_period: period,
-    });
+    };
 
-    if (insertError) {
-      setError(insertError.message);
+    let dbError;
+
+    if (isEditing) {
+      // Update existing entry
+      const { error } = await supabase
+        .from("entries")
+        .update(entryData)
+        .eq("id", editingEntry.id);
+      dbError = error;
     } else {
-      setTicker("");
-      setEntryDate("");
-      setSource("");
-      setNote("");
-      setFlag("");
+      // Insert new entry
+      const { error } = await supabase.from("entries").insert({
+        user_id: user.id,
+        ...entryData,
+      });
+      dbError = error;
+    }
+
+    if (dbError) {
+      setError(dbError.message);
+    } else {
+      clearForm();
+      onCancelEdit?.();
       onEntryAdded();
     }
 
@@ -188,13 +234,24 @@ export default function EntryForm({ onEntryAdded }: EntryFormProps) {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {loading ? "Adding..." : "Add Entry"}
-      </button>
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {loading ? (isEditing ? "Updating..." : "Adding...") : (isEditing ? "Edit Entry" : "Add Entry")}
+        </button>
+        {isEditing && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

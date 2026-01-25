@@ -23,9 +23,10 @@ interface EntryListProps {
   entries: Entry[];
   searchQuery: string;
   onEntryDeleted: () => void;
+  onEditEntry: (entry: Entry) => void;
 }
 
-export default function EntryList({ entries, searchQuery, onEntryDeleted }: EntryListProps) {
+export default function EntryList({ entries, searchQuery, onEntryDeleted, onEditEntry }: EntryListProps) {
   const supabase = createClient();
 
   const filteredEntries = entries.filter((entry) => {
@@ -112,13 +113,22 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted }: Entr
                     </div>
                     <p className="text-gray-300">{entry.note}</p>
                   </div>
-                  <button
-                    onClick={() => handleDelete(entry.id)}
-                    className="ml-4 text-red-500 hover:text-red-400 text-sm"
-                    title="Delete entry"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-3 ml-4">
+                    <button
+                      onClick={() => onEditEntry(entry)}
+                      className="text-blue-400 hover:text-blue-300 text-sm"
+                      title="Edit entry"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      className="text-red-500 hover:text-red-400 text-sm"
+                      title="Delete entry"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
