@@ -107,9 +107,16 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
                           {FLAG_DISPLAY[entry.flag]}
                         </span>
                       )}
-                      <span className="font-mono font-bold text-blue-400">
-                        {entry.ticker}
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {entry.ticker.split(",").map((t, i) => (
+                          <span
+                            key={i}
+                            className="font-mono font-bold text-blue-400 bg-blue-900/30 px-1.5 py-0.5 rounded text-sm"
+                          >
+                            {t.trim()}
+                          </span>
+                        ))}
+                      </div>
                       <span className="text-sm text-gray-400">
                         {formatDate(entry.entry_date)}
                       </span>

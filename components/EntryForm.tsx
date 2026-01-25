@@ -95,8 +95,15 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
       return;
     }
 
+    // Format tickers: uppercase, trim whitespace, remove empty entries
+    const formattedTickers = ticker
+      .split(",")
+      .map((t) => t.trim().toUpperCase())
+      .filter((t) => t.length > 0)
+      .join(", ");
+
     const entryData = {
-      ticker: ticker.toUpperCase().trim(),
+      ticker: formattedTickers,
       entry_date: entryDate,
       source: source.trim() || null,
       note: note.trim(),
@@ -139,16 +146,17 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label htmlFor="ticker" className="block text-sm font-medium text-gray-300 mb-1">
-            Ticker
+            Ticker(s)
           </label>
           <input
             id="ticker"
             type="text"
             value={ticker}
             onChange={(e) => setTicker(e.target.value)}
-            placeholder="WFC"
+            placeholder="WFC or WFC, JPM, BAC"
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 uppercase"
           />
+          <p className="text-xs text-gray-400 mt-1">Separate multiple tickers with commas</p>
         </div>
 
         <div>
