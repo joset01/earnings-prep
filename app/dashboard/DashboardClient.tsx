@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import EntryForm from "@/components/EntryForm";
 import EntryList, { Entry } from "@/components/EntryList";
@@ -40,6 +41,13 @@ export default function DashboardClient({ initialEntries, userEmail }: Dashboard
       <header className="bg-gray-800 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-100">Earnings Prep - Lokoya</h1>
+          <Image
+            src="/logo.jpg"
+            alt="Lokoya Logo"
+            width={50}
+            height={50}
+            className="rounded"
+          />
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-400">{userEmail}</span>
             <button
