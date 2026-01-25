@@ -1,0 +1,129 @@
+"use client";
+
+import { createClient } from "@/lib/supabase/client";
+
+export interface Entry {
+  id: string;
+  ticker: string;
+  entry_date: string;
+  source: string | null;
+  note: string;
+  flag: string | null;
+  earnings_period: string;
+  created_at: string;
+}
+
+const FLAG_DISPLAY: Record<string, string> = {
+  check: "✓",
+  star: "⭐",
+};
+
+interface EntryListProps {
+  entries: Entry[];
+  searchQuery: string;
+  onEntryDeleted: () => void;
+}
+
+export default function EntryList({ entries, searchQuery, onEntryDeleted }: EntryListProps) {
+  const supabase = createClient();
+
+  const filteredEntries = entries.filter((entry) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      entry.ticker.toLowerCase().includes(query) ||
+      entry.note.toLowerCase().includes(query) ||
+      (entry.source && entry.source.toLowerCase().includes(query))
+    );
+  });
+
+  // Group entries by earnings period
+  const groupedEntries = filteredEntries.reduce<Record<string, Entry[]>>((acc, entry) => {
+    const period = entry.earnings_period;
+    if (!acc[period]) {
+      acc[period] = [];
+    }
+    acc[period].push(entry);
+    return acc;
+  }, {});
+
+  // Sort periods (most recent first)
+  const sortedPeriods = Object.keys(groupedEntries).sort((a, b) => {
+    const [qA, yearA] = a.split(" ");
+    const [qB, yearB] = b.split(" ");
+    if (yearA !== yearB) return Number(yearB) - Number(yearA);
+    return Number(qB.replace("Q", "")) - Number(qA.replace("Q", ""));
+  });
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("entries").delete().eq("id", id);
+    if (!error) {
+      onEntryDeleted();
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr + "T00:00:00");
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  if (filteredEntries.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-8">
+        {searchQuery ? "No entries match your search" : "No entries yet. Add your first one above!"}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {sortedPeriods.map((period) => (
+        <div key={period} className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          <div className="bg-gray-700 px-4 py-2 font-semibold text-gray-200 border-b border-gray-600">
+            {period}
+          </div>
+          <div className="divide-y divide-gray-700">
+            {groupedEntries[period].map((entry) => (
+              <div key={entry.id} className="p-4 hover:bg-gray-700/50">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      {entry.flag && (
+                        <span className="text-lg" title="Flagged">
+                          {FLAG_DISPLAY[entry.flag]}
+                        </span>
+                      )}
+                      <span className="font-mono font-bold text-blue-400">
+                        {entry.ticker}
+                      </span>
+                      <span className="text-sm text-gray-400">
+                        {formatDate(entry.entry_date)}
+                      </span>
+                      {entry.source && (
+                        <span className="text-sm text-gray-500 italic">
+                          {entry.source}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-300">{entry.note}</p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(entry.id)}
+                    className="ml-4 text-red-500 hover:text-red-400 text-sm"
+                    title="Delete entry"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
