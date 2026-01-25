@@ -49,6 +49,13 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
     return acc;
   }, {});
 
+  // Sort entries within each period by date (newest first)
+  Object.keys(groupedEntries).forEach((period) => {
+    groupedEntries[period].sort((a, b) => {
+      return new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime();
+    });
+  });
+
   // Sort periods (most recent first)
   const sortedPeriods = Object.keys(groupedEntries).sort((a, b) => {
     const [qA, yearA] = a.split(" ");
