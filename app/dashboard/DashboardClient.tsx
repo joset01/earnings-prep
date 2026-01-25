@@ -39,7 +39,7 @@ export default function DashboardClient({ initialEntries, userEmail }: Dashboard
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-100">Earnings Prep</h1>
+          <h1 className="text-xl font-bold text-gray-100">Earnings Prep - Lokoya</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-400">{userEmail}</span>
             <button
