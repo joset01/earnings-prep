@@ -14,8 +14,9 @@ export interface Entry {
 }
 
 const FLAG_DISPLAY: Record<string, string> = {
-  check: "✓",
-  star: "⭐",
+  green: "🟩",
+  yellow: "🟨",
+  red: "🟥",
 };
 
 interface EntryListProps {

@@ -10,8 +10,9 @@ interface EntryFormProps {
 
 const FLAG_OPTIONS = [
   { value: "", label: "None" },
-  { value: "check", label: "✓" },
-  { value: "star", label: "⭐" },
+  { value: "green", label: "🟩 Green" },
+  { value: "yellow", label: "🟨 Yellow" },
+  { value: "red", label: "🟥 Red" },
 ];
 
 export default function EntryForm({ onEntryAdded }: EntryFormProps) {
