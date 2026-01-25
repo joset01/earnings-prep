@@ -23,6 +23,7 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
   const [entryDate, setEntryDate] = useState("");
   const [source, setSource] = useState("");
   const [note, setNote] = useState("");
+  const [link, setLink] = useState("");
   const [flag, setFlag] = useState("");
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,6 +40,7 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
       setEntryDate(editingEntry.entry_date);
       setSource(editingEntry.source || "");
       setNote(editingEntry.note);
+      setLink(editingEntry.link || "");
       setFlag(editingEntry.flag || "");
       setPeriod(editingEntry.earnings_period);
     }
@@ -49,6 +51,7 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
     setEntryDate("");
     setSource("");
     setNote("");
+    setLink("");
     setFlag("");
     setPeriod("");
     setError(null);
@@ -97,6 +100,7 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
       entry_date: entryDate,
       source: source.trim() || null,
       note: note.trim(),
+      link: link.trim() || null,
       flag: flag || null,
       earnings_period: period,
     };
@@ -206,6 +210,20 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
           placeholder="Enter your observation or insight..."
           rows={3}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="link" className="block text-sm font-medium text-gray-300 mb-1">
+          Link <span className="text-gray-500">(optional)</span>
+        </label>
+        <input
+          id="link"
+          type="url"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          placeholder="https://..."
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400"
         />
       </div>
 

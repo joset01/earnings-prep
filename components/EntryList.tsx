@@ -8,6 +8,7 @@ export interface Entry {
   entry_date: string;
   source: string | null;
   note: string;
+  link: string | null;
   flag: string | null;
   earnings_period: string;
   created_at: string;
@@ -119,6 +120,16 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
                       )}
                     </div>
                     <p className="text-gray-300">{entry.note}</p>
+                    {entry.link && (
+                      <a
+                        href={entry.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-400 hover:text-blue-300 underline mt-1 inline-block"
+                      >
+                        {entry.link}
+                      </a>
+                    )}
                   </div>
                   <div className="flex gap-3 ml-4">
                     <button
