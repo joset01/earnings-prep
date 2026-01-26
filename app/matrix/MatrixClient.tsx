@@ -10,6 +10,7 @@ export interface CompanyRow {
   id?: string;
   ticker: string;
   valuation: string;
+  model: string;
 }
 
 interface MatrixClientProps {
@@ -55,6 +56,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
       user_id: user.id,
       ticker: t,
       valuation: "",
+      model: "",
     }));
 
     const { data, error } = await supabase
@@ -81,6 +83,22 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     if (!error) {
       setCompanies((prev) =>
         prev.map((c) => (c.ticker === ticker ? { ...c, valuation: value } : c))
+      );
+    }
+  };
+
+  const handleModelChange = async (ticker: string, value: string) => {
+    const company = companies.find((c) => c.ticker === ticker);
+    if (!company?.id) return;
+
+    const { error } = await supabase
+      .from("matrix_companies")
+      .update({ model: value })
+      .eq("id", company.id);
+
+    if (!error) {
+      setCompanies((prev) =>
+        prev.map((c) => (c.ticker === ticker ? { ...c, model: value } : c))
       );
     }
   };
@@ -143,6 +161,9 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
                     Valuation
                   </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                    Model
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -155,6 +176,18 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                       <select
                         value={company.valuation}
                         onChange={(e) => handleValuationChange(company.ticker, e.target.value)}
+                        className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
+                      >
+                        <option value="">--</option>
+                        <option value="green">🟩</option>
+                        <option value="yellow">🟨</option>
+                        <option value="red">🟥</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 text-gray-100">
+                      <select
+                        value={company.model}
+                        onChange={(e) => handleModelChange(company.ticker, e.target.value)}
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>
