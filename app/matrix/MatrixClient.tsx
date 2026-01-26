@@ -10,9 +10,14 @@ interface MatrixClientProps {
   userEmail: string;
 }
 
+interface CompanyRow {
+  ticker: string;
+  valuation: string;
+}
+
 export default function MatrixClient({ userEmail }: MatrixClientProps) {
   const [inputValue, setInputValue] = useState("");
-  const [companies, setCompanies] = useState<string[]>([]);
+  const [companies, setCompanies] = useState<CompanyRow[]>([]);
   const router = useRouter();
   const supabase = createClient();
 
@@ -33,11 +38,20 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
 
     // Add to list (avoiding duplicates)
     setCompanies((prev) => {
-      const combined = [...prev, ...newTickers];
-      return Array.from(new Set(combined));
+      const existingTickers = prev.map((c) => c.ticker);
+      const newRows = newTickers
+        .filter((t) => !existingTickers.includes(t))
+        .map((t) => ({ ticker: t, valuation: "" }));
+      return [...prev, ...newRows];
     });
 
     setInputValue("");
+  };
+
+  const handleValuationChange = (ticker: string, value: string) => {
+    setCompanies((prev) =>
+      prev.map((c) => (c.ticker === ticker ? { ...c, valuation: value } : c))
+    );
   };
 
   return (
@@ -101,12 +115,21 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {companies.map((ticker) => (
-                  <tr key={ticker} className="hover:bg-gray-700/50">
+                {companies.map((company) => (
+                  <tr key={company.ticker} className="hover:bg-gray-700/50">
                     <td className="px-4 py-3 text-gray-100 font-mono">
-                      {ticker}
+                      {company.ticker}
                     </td>
                     <td className="px-4 py-3 text-gray-100">
+                      <select
+                        value={company.valuation}
+                        onChange={(e) => handleValuationChange(company.ticker, e.target.value)}
+                        className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
+                      >
+                        <option value="">--</option>
+                        <option value="check">✓</option>
+                        <option value="tilde">~</option>
+                      </select>
                     </td>
                   </tr>
                 ))}
