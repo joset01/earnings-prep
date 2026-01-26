@@ -44,7 +44,7 @@ export default function DashboardClient({ initialEntries, userEmail }: Dashboard
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <NavDropdown currentPage="dashboard" />
-            <h1 className="text-xl font-bold text-gray-100">Earnings Prep</h1>
+            <h1 className="text-xl font-bold text-gray-100">Earnings Notes</h1>
           </div>
           <Image
             src="/logo.jpg"
