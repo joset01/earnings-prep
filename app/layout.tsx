@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Earnings Prep - Lokoya",
+  title: "Earnings Prep",
   description: "Track research notes before earnings reports",
 };
 

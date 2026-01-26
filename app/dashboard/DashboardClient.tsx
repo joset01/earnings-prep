@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import EntryForm from "@/components/EntryForm";
 import EntryList, { Entry } from "@/components/EntryList";
 import SearchBar from "@/components/SearchBar";
+import NavDropdown from "@/components/NavDropdown";
 
 interface DashboardClientProps {
   initialEntries: Entry[];
@@ -41,10 +42,13 @@ export default function DashboardClient({ initialEntries, userEmail }: Dashboard
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-100">Earnings Prep - Lokoya</h1>
+          <div className="flex items-center gap-4">
+            <NavDropdown currentPage="dashboard" />
+            <h1 className="text-xl font-bold text-gray-100">Earnings Prep</h1>
+          </div>
           <Image
             src="/logo.jpg"
-            alt="Lokoya Logo"
+            alt="Logo"
             width={160}
             height={160}
             className="rounded"
