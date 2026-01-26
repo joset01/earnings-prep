@@ -10,5 +10,15 @@ export default async function Matrix() {
     redirect("/");
   }
 
-  return <MatrixClient userEmail={user.email || ""} />;
+  const { data: companies } = await supabase
+    .from("matrix_companies")
+    .select("id, ticker, valuation")
+    .order("created_at", { ascending: true });
+
+  return (
+    <MatrixClient
+      userEmail={user.email || ""}
+      initialCompanies={companies || []}
+    />
+  );
 }

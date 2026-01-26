@@ -6,18 +6,20 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import NavDropdown from "@/components/NavDropdown";
 
-interface MatrixClientProps {
-  userEmail: string;
-}
-
-interface CompanyRow {
+export interface CompanyRow {
+  id?: string;
   ticker: string;
   valuation: string;
 }
 
-export default function MatrixClient({ userEmail }: MatrixClientProps) {
+interface MatrixClientProps {
+  userEmail: string;
+  initialCompanies: CompanyRow[];
+}
+
+export default function MatrixClient({ userEmail, initialCompanies }: MatrixClientProps) {
   const [inputValue, setInputValue] = useState("");
-  const [companies, setCompanies] = useState<CompanyRow[]>([]);
+  const [companies, setCompanies] = useState<CompanyRow[]>(initialCompanies);
   const router = useRouter();
   const supabase = createClient();
 
@@ -27,8 +29,11 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
     router.refresh();
   };
 
-  const handleAddCompanies = () => {
+  const handleAddCompanies = async () => {
     if (!inputValue.trim()) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
     // Parse input - could be comma-separated or single ticker
     const newTickers = inputValue
@@ -36,22 +41,48 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
       .map((t) => t.trim().toUpperCase())
       .filter((t) => t.length > 0);
 
-    // Add to list (avoiding duplicates)
-    setCompanies((prev) => {
-      const existingTickers = prev.map((c) => c.ticker);
-      const newRows = newTickers
-        .filter((t) => !existingTickers.includes(t))
-        .map((t) => ({ ticker: t, valuation: "" }));
-      return [...prev, ...newRows];
-    });
+    // Filter out duplicates
+    const existingTickers = companies.map((c) => c.ticker);
+    const tickersToAdd = newTickers.filter((t) => !existingTickers.includes(t));
+
+    if (tickersToAdd.length === 0) {
+      setInputValue("");
+      return;
+    }
+
+    // Insert into database
+    const rowsToInsert = tickersToAdd.map((t) => ({
+      user_id: user.id,
+      ticker: t,
+      valuation: "",
+    }));
+
+    const { data, error } = await supabase
+      .from("matrix_companies")
+      .insert(rowsToInsert)
+      .select();
+
+    if (!error && data) {
+      setCompanies((prev) => [...prev, ...data]);
+    }
 
     setInputValue("");
   };
 
-  const handleValuationChange = (ticker: string, value: string) => {
-    setCompanies((prev) =>
-      prev.map((c) => (c.ticker === ticker ? { ...c, valuation: value } : c))
-    );
+  const handleValuationChange = async (ticker: string, value: string) => {
+    const company = companies.find((c) => c.ticker === ticker);
+    if (!company?.id) return;
+
+    const { error } = await supabase
+      .from("matrix_companies")
+      .update({ valuation: value })
+      .eq("id", company.id);
+
+    if (!error) {
+      setCompanies((prev) =>
+        prev.map((c) => (c.ticker === ticker ? { ...c, valuation: value } : c))
+      );
+    }
   };
 
   return (
