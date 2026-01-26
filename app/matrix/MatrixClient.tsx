@@ -34,7 +34,7 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
     // Add to list (avoiding duplicates)
     setCompanies((prev) => {
       const combined = [...prev, ...newTickers];
-      return [...new Set(combined)];
+      return Array.from(new Set(combined));
     });
 
     setInputValue("");
