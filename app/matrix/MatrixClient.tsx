@@ -11,6 +11,7 @@ export interface CompanyRow {
   ticker: string;
   valuation: string;
   model: string;
+  bloomberg_em: string;
 }
 
 interface MatrixClientProps {
@@ -57,6 +58,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
       ticker: t,
       valuation: "",
       model: "",
+      bloomberg_em: "",
     }));
 
     const { data, error } = await supabase
@@ -99,6 +101,22 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     if (!error) {
       setCompanies((prev) =>
         prev.map((c) => (c.ticker === ticker ? { ...c, model: value } : c))
+      );
+    }
+  };
+
+  const handleBloombergEmChange = async (ticker: string, value: string) => {
+    const company = companies.find((c) => c.ticker === ticker);
+    if (!company?.id) return;
+
+    const { error } = await supabase
+      .from("matrix_companies")
+      .update({ bloomberg_em: value })
+      .eq("id", company.id);
+
+    if (!error) {
+      setCompanies((prev) =>
+        prev.map((c) => (c.ticker === ticker ? { ...c, bloomberg_em: value } : c))
       );
     }
   };
@@ -164,6 +182,9 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
                     Model
                   </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                    Bloomberg EM q/q
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -188,6 +209,18 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                       <select
                         value={company.model}
                         onChange={(e) => handleModelChange(company.ticker, e.target.value)}
+                        className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
+                      >
+                        <option value="">--</option>
+                        <option value="green">🟩</option>
+                        <option value="yellow">🟨</option>
+                        <option value="red">🟥</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 text-gray-100">
+                      <select
+                        value={company.bloomberg_em}
+                        onChange={(e) => handleBloombergEmChange(company.ticker, e.target.value)}
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>

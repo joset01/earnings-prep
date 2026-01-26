@@ -12,7 +12,7 @@ export default async function Matrix() {
 
   const { data: companies } = await supabase
     .from("matrix_companies")
-    .select("id, ticker, valuation, model")
+    .select("id, ticker, valuation, model, bloomberg_em")
     .order("created_at", { ascending: true });
 
   return (
