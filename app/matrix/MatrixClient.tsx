@@ -95,6 +95,9 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
                     Ticker
                   </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                    Valuation
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -102,6 +105,8 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
                   <tr key={ticker} className="hover:bg-gray-700/50">
                     <td className="px-4 py-3 text-gray-100 font-mono">
                       {ticker}
+                    </td>
+                    <td className="px-4 py-3 text-gray-100">
                     </td>
                   </tr>
                 ))}
