@@ -47,8 +47,15 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="text-center text-gray-400 py-16">
-          Earnings Matrix - Coming Soon
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Companies to analyze this earnings season
+          </label>
+          <textarea
+            placeholder="Enter company tickers (e.g., WFC, JPM, BAC)"
+            rows={3}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none"
+          />
         </div>
       </main>
     </div>
