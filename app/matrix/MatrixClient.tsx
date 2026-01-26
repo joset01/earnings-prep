@@ -13,6 +13,7 @@ export interface CompanyRow {
   model: string;
   bloomberg_em: string;
   evernote: string;
+  sort_order?: number;
 }
 
 interface MatrixClientProps {
@@ -24,6 +25,8 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
   const [inputValue, setInputValue] = useState("");
   const [companies, setCompanies] = useState<CompanyRow[]>(initialCompanies);
   const [sortedByTicker, setSortedByTicker] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -54,14 +57,19 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
       return;
     }
 
-    // Insert into database
-    const rowsToInsert = tickersToAdd.map((t) => ({
+    // Insert into database - new items go at the end
+    const maxSortOrder = companies.length > 0
+      ? Math.max(...companies.map((c) => c.sort_order ?? 0))
+      : -1;
+
+    const rowsToInsert = tickersToAdd.map((t, i) => ({
       user_id: user.id,
       ticker: t,
       valuation: "",
       model: "",
       bloomberg_em: "",
       evernote: "",
+      sort_order: maxSortOrder + 1 + i,
     }));
 
     const { data, error } = await supabase
@@ -159,6 +167,47 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     setSortedByTicker(true);
   };
 
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = async () => {
+    if (draggedIndex === null || dragOverIndex === null || draggedIndex === dragOverIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newCompanies = [...companies];
+    const [draggedItem] = newCompanies.splice(draggedIndex, 1);
+    newCompanies.splice(dragOverIndex, 0, draggedItem);
+
+    // Update sort_order for all items
+    const updatedCompanies = newCompanies.map((company, index) => ({
+      ...company,
+      sort_order: index,
+    }));
+
+    setCompanies(updatedCompanies);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+
+    // Persist new order to database
+    for (const company of updatedCompanies) {
+      if (company.id) {
+        await supabase
+          .from("matrix_companies")
+          .update({ sort_order: company.sort_order })
+          .eq("id", company.id);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-sm">
@@ -232,11 +281,19 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                     Evernote
                   </th>
                   <th className="px-4 py-3"></th>
+                  <th className="px-2 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {companies.map((company) => (
-                  <tr key={company.ticker} className="hover:bg-gray-700/50">
+                {companies.map((company, index) => (
+                  <tr
+                    key={company.ticker}
+                    className={`hover:bg-gray-700/50 ${dragOverIndex === index ? "bg-gray-600" : ""}`}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                  >
                     <td className="px-4 py-3 text-gray-100 font-mono">
                       {company.ticker}
                     </td>
@@ -295,6 +352,14 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                       >
                         Delete
                       </button>
+                    </td>
+                    <td className="px-2 py-3">
+                      <span
+                        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-200"
+                        title="Drag to reorder"
+                      >
+                        ⠿
+                      </span>
                     </td>
                   </tr>
                 ))}
