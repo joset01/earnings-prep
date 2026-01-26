@@ -139,6 +139,20 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     }
   };
 
+  const handleDelete = async (ticker: string) => {
+    const company = companies.find((c) => c.ticker === ticker);
+    if (!company?.id) return;
+
+    const { error } = await supabase
+      .from("matrix_companies")
+      .delete()
+      .eq("id", company.id);
+
+    if (!error) {
+      setCompanies((prev) => prev.filter((c) => c.ticker !== ticker));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-sm">
@@ -206,6 +220,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
                     Evernote
                   </th>
+                  <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -261,6 +276,14 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                         <option value="yellow">🟨</option>
                         <option value="red">🟥</option>
                       </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleDelete(company.ticker)}
+                        className="text-red-500 hover:text-red-400 text-sm"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
