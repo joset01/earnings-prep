@@ -23,6 +23,7 @@ interface MatrixClientProps {
 export default function MatrixClient({ userEmail, initialCompanies }: MatrixClientProps) {
   const [inputValue, setInputValue] = useState("");
   const [companies, setCompanies] = useState<CompanyRow[]>(initialCompanies);
+  const [sortedByTicker, setSortedByTicker] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -153,6 +154,11 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     }
   };
 
+  const handleSortByTicker = () => {
+    setCompanies((prev) => [...prev].sort((a, b) => a.ticker.localeCompare(b.ticker)));
+    setSortedByTicker(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-sm">
@@ -206,7 +212,12 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
               <thead>
                 <tr className="bg-gray-700">
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
-                    Ticker
+                    <button
+                      onClick={handleSortByTicker}
+                      className="text-blue-400 hover:text-blue-300 hover:underline"
+                    >
+                      Ticker
+                    </button>
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
                     Valuation
