@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -10,6 +11,8 @@ interface MatrixClientProps {
 }
 
 export default function MatrixClient({ userEmail }: MatrixClientProps) {
+  const [inputValue, setInputValue] = useState("");
+  const [companies, setCompanies] = useState<string[]>([]);
   const router = useRouter();
   const supabase = createClient();
 
@@ -17,6 +20,24 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
     await supabase.auth.signOut();
     router.push("/");
     router.refresh();
+  };
+
+  const handleAddCompanies = () => {
+    if (!inputValue.trim()) return;
+
+    // Parse input - could be comma-separated or single ticker
+    const newTickers = inputValue
+      .split(",")
+      .map((t) => t.trim().toUpperCase())
+      .filter((t) => t.length > 0);
+
+    // Add to list (avoiding duplicates)
+    setCompanies((prev) => {
+      const combined = [...prev, ...newTickers];
+      return [...new Set(combined)];
+    });
+
+    setInputValue("");
   };
 
   return (
@@ -51,12 +72,45 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Companies to analyze this earnings season
           </label>
-          <textarea
-            placeholder="Enter company tickers (e.g., WFC, JPM, BAC)"
-            rows={3}
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none"
-          />
+          <div className="flex gap-3">
+            <textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Enter company tickers (e.g., WFC, JPM, BAC)"
+              rows={3}
+              className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none"
+            />
+            <button
+              onClick={handleAddCompanies}
+              className="px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors self-stretch"
+            >
+              Enter
+            </button>
+          </div>
         </div>
+
+        {companies.length > 0 && (
+          <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-700">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                    Ticker
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {companies.map((ticker) => (
+                  <tr key={ticker} className="hover:bg-gray-700/50">
+                    <td className="px-4 py-3 text-gray-100 font-mono">
+                      {ticker}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </main>
     </div>
   );
