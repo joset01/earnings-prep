@@ -127,8 +127,9 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>
-                        <option value="check">✓</option>
-                        <option value="tilde">~</option>
+                        <option value="green">🟩</option>
+                        <option value="yellow">🟨</option>
+                        <option value="red">🟥</option>
                       </select>
                     </td>
                   </tr>
