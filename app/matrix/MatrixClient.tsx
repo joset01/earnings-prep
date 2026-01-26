@@ -72,21 +72,19 @@ export default function MatrixClient({ userEmail }: MatrixClientProps) {
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Companies to analyze this earnings season
           </label>
-          <div className="flex gap-3">
-            <textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Enter company tickers (e.g., WFC, JPM, BAC)"
-              rows={3}
-              className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none"
-            />
-            <button
-              onClick={handleAddCompanies}
-              className="px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors self-stretch"
-            >
-              Enter
-            </button>
-          </div>
+          <textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Enter company tickers (e.g., WFC, JPM, BAC)"
+            rows={3}
+            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none mb-3"
+          />
+          <button
+            onClick={handleAddCompanies}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Enter
+          </button>
         </div>
 
         {companies.length > 0 && (
