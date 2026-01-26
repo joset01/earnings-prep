@@ -12,6 +12,7 @@ export interface CompanyRow {
   valuation: string;
   model: string;
   bloomberg_em: string;
+  evernote: string;
 }
 
 interface MatrixClientProps {
@@ -59,6 +60,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
       valuation: "",
       model: "",
       bloomberg_em: "",
+      evernote: "",
     }));
 
     const { data, error } = await supabase
@@ -117,6 +119,22 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     if (!error) {
       setCompanies((prev) =>
         prev.map((c) => (c.ticker === ticker ? { ...c, bloomberg_em: value } : c))
+      );
+    }
+  };
+
+  const handleEvernoteChange = async (ticker: string, value: string) => {
+    const company = companies.find((c) => c.ticker === ticker);
+    if (!company?.id) return;
+
+    const { error } = await supabase
+      .from("matrix_companies")
+      .update({ evernote: value })
+      .eq("id", company.id);
+
+    if (!error) {
+      setCompanies((prev) =>
+        prev.map((c) => (c.ticker === ticker ? { ...c, evernote: value } : c))
       );
     }
   };
@@ -185,6 +203,9 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
                     Bloomberg EM q/q
                   </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                    Evernote
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -221,6 +242,18 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                       <select
                         value={company.bloomberg_em}
                         onChange={(e) => handleBloombergEmChange(company.ticker, e.target.value)}
+                        className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
+                      >
+                        <option value="">--</option>
+                        <option value="green">🟩</option>
+                        <option value="yellow">🟨</option>
+                        <option value="red">🟥</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 text-gray-100">
+                      <select
+                        value={company.evernote}
+                        onChange={(e) => handleEvernoteChange(company.ticker, e.target.value)}
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>
