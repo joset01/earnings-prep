@@ -81,6 +81,45 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
     });
   };
 
+  const renderNoteWithImages = (noteText: string) => {
+    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const parts: (string | { type: "image"; alt: string; url: string })[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = imageRegex.exec(noteText)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(noteText.substring(lastIndex, match.index));
+      }
+      parts.push({ type: "image", alt: match[1], url: match[2] });
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < noteText.length) {
+      parts.push(noteText.substring(lastIndex));
+    }
+
+    return parts.map((part, i) => {
+      if (typeof part === "string") {
+        return part.split('\n').map((line, j, arr) => (
+          <span key={`${i}-${j}`}>
+            {line}
+            {j < arr.length - 1 && <br />}
+          </span>
+        ));
+      } else {
+        return (
+          <img
+            key={i}
+            src={part.url}
+            alt={part.alt || "pasted image"}
+            className="max-w-full h-auto rounded my-2 block"
+          />
+        );
+      }
+    });
+  };
+
   if (filteredEntries.length === 0) {
     return (
       <div className="text-center text-gray-400 py-8">
@@ -126,14 +165,9 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-300">
-                      {entry.note.split('\n').map((line, i, arr) => (
-                        <span key={i}>
-                          {line}
-                          {i < arr.length - 1 && <br />}
-                        </span>
-                      ))}
-                    </p>
+                    <div className="text-gray-300">
+                      {renderNoteWithImages(entry.note)}
+                    </div>
                     {entry.link && (
                       <a
                         href={entry.link}

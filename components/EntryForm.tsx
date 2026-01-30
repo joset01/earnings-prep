@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { generateEarningsPeriods } from "@/lib/parseEntry";
 import { Entry } from "./EntryList";
@@ -27,7 +27,9 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
   const [flag, setFlag] = useState("");
   const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const supabase = createClient();
   const periods = generateEarningsPeriods();
 
@@ -60,6 +62,70 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
   const handleCancel = () => {
     clearForm();
     onCancelEdit?.();
+  };
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (!file) return;
+
+        setUploading(true);
+        setError(null);
+
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            setError("You must be logged in to upload images");
+            setUploading(false);
+            return;
+          }
+
+          const timestamp = Date.now();
+          const random = Math.random().toString(36).substring(2, 8);
+          const ext = file.type.split("/")[1] || "png";
+          const filePath = `${user.id}/${timestamp}-${random}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("note-images")
+            .upload(filePath, file);
+
+          if (uploadError) {
+            setError(`Upload failed: ${uploadError.message}`);
+            setUploading(false);
+            return;
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from("note-images")
+            .getPublicUrl(filePath);
+
+          const textarea = textareaRef.current;
+          if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const imageMarkdown = `![image](${publicUrl})`;
+            const newNote = note.substring(0, start) + imageMarkdown + note.substring(end);
+            setNote(newNote);
+
+            setTimeout(() => {
+              textarea.selectionStart = textarea.selectionEnd = start + imageMarkdown.length;
+              textarea.focus();
+            }, 0);
+          }
+        } catch (err) {
+          setError("Failed to upload image");
+        }
+
+        setUploading(false);
+        return;
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -212,13 +278,19 @@ export default function EntryForm({ onEntryAdded, editingEntry, onCancelEdit }: 
           Note
         </label>
         <textarea
+          ref={textareaRef}
           id="note"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Enter your observation or insight..."
+          onPaste={handlePaste}
+          placeholder="Enter your observation or insight... (you can paste images)"
           rows={6}
-          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none"
+          disabled={uploading}
+          className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none disabled:opacity-50"
         />
+        {uploading && (
+          <p className="text-sm text-blue-400 mt-1">Uploading image...</p>
+        )}
       </div>
 
       <div className="mb-4">
