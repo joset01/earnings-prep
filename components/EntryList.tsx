@@ -126,7 +126,14 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-300">{entry.note}</p>
+                    <p className="text-gray-300">
+                      {entry.note.split('\n').map((line, i, arr) => (
+                        <span key={i}>
+                          {line}
+                          {i < arr.length - 1 && <br />}
+                        </span>
+                      ))}
+                    </p>
                     {entry.link && (
                       <a
                         href={entry.link}
