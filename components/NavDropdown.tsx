@@ -4,12 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
 interface NavDropdownProps {
-  currentPage: "dashboard" | "matrix";
+  currentPage: "dashboard" | "matrix" | "sentiment";
 }
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Earnings Notes", href: "/dashboard" },
   { id: "matrix", label: "Earnings Matrix", href: "/matrix" },
+  { id: "sentiment", label: "Twitter Sentiment", href: "/sentiment" },
 ];
 
 export default function NavDropdown({ currentPage }: NavDropdownProps) {
