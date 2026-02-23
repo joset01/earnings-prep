@@ -14,35 +14,29 @@ interface SentimentClientProps {
 const LABEL_STYLES = {
   bullish: {
     badge: "bg-green-900/50 text-green-300 border border-green-700",
-    bar: "bg-green-500",
     heading: "text-green-400",
-    pill: "bg-green-600",
   },
   neutral: {
     badge: "bg-gray-700 text-gray-300 border border-gray-600",
-    bar: "bg-gray-500",
     heading: "text-gray-300",
-    pill: "bg-gray-500",
   },
   bearish: {
     badge: "bg-red-900/50 text-red-300 border border-red-700",
-    bar: "bg-red-500",
     heading: "text-red-400",
-    pill: "bg-red-600",
   },
 };
 
-function TweetCard({ tweet }: { tweet: TweetResult }) {
-  const style = LABEL_STYLES[tweet.label];
+function MessageCard({ msg }: { msg: TweetResult }) {
+  const style = LABEL_STYLES[msg.sentiment];
   return (
-    <div className="bg-gray-750 border border-gray-700 rounded-lg p-4">
+    <div className="border border-gray-700 rounded-lg p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <span className="text-xs text-blue-400 font-mono">@{tweet.username}</span>
-          <p className="text-sm text-gray-200 mt-1 leading-relaxed">{tweet.text}</p>
+          <span className="text-xs text-blue-400 font-mono">@{msg.username}</span>
+          <p className="text-sm text-gray-200 mt-1 leading-relaxed">{msg.text}</p>
         </div>
         <span className={`text-xs px-2 py-1 rounded-full shrink-0 font-medium ${style.badge}`}>
-          {tweet.label}
+          {msg.sentiment}
         </span>
       </div>
     </div>
@@ -95,11 +89,7 @@ export default function SentimentClient({ userEmail }: SentimentClientProps) {
     setResult(null);
 
     try {
-      const res = await fetch("/api/sentiment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticker: clean }),
-      });
+      const res = await fetch(`/api/sentiment?ticker=${clean}`);
 
       const data = await res.json();
 
@@ -125,7 +115,7 @@ export default function SentimentClient({ userEmail }: SentimentClientProps) {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <NavDropdown currentPage="sentiment" />
-            <h1 className="text-xl font-bold text-gray-100">Twitter Sentiment</h1>
+            <h1 className="text-xl font-bold text-gray-100">Stocktwits Sentiment</h1>
           </div>
           <Image src="/logo.jpg" alt="Logo" width={160} height={160} className="rounded" />
           <div className="flex items-center gap-4">
@@ -144,7 +134,7 @@ export default function SentimentClient({ userEmail }: SentimentClientProps) {
         {/* Search */}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6">
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Enter a stock ticker to analyze Twitter sentiment
+            Enter a stock ticker to analyze Stocktwits sentiment
           </label>
           <div className="flex gap-3">
             <div className="relative flex-1">
@@ -163,11 +153,11 @@ export default function SentimentClient({ userEmail }: SentimentClientProps) {
               disabled={loading || !ticker.trim()}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Analyzing..." : "Analyze"}
+              {loading ? "Loading..." : "Analyze"}
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Pulls the latest ~40 tweets mentioning ${ticker || "TICKER"} and scores each one.
+            Pulls the latest ~30 Stocktwits posts for ${ticker || "TICKER"} — sentiment is tagged by users directly.
           </p>
         </div>
 
@@ -175,8 +165,7 @@ export default function SentimentClient({ userEmail }: SentimentClientProps) {
         {loading && (
           <div className="bg-gray-800 rounded-lg p-8 text-center">
             <div className="inline-block w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3" />
-            <p className="text-gray-400 text-sm">Fetching tweets and analyzing sentiment...</p>
-            <p className="text-gray-500 text-xs mt-1">This may take 20–40 seconds</p>
+            <p className="text-gray-400 text-sm">Fetching Stocktwits data...</p>
           </div>
         )}
 
@@ -195,7 +184,7 @@ export default function SentimentClient({ userEmail }: SentimentClientProps) {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <span className="font-mono text-2xl font-bold text-gray-100">${result.ticker}</span>
-                  <span className="ml-3 text-sm text-gray-400">{result.tweetCount} tweets analyzed</span>
+                  <span className="ml-3 text-sm text-gray-400">{result.tweetCount} posts analyzed</span>
                 </div>
                 <span className={`text-lg font-bold uppercase tracking-wide ${LABEL_STYLES[result.label].heading}`}>
                   {result.label}
@@ -221,12 +210,11 @@ export default function SentimentClient({ userEmail }: SentimentClientProps) {
               </div>
             </div>
 
-            {/* Tweet list */}
             <div>
-              <h2 className="text-sm font-medium text-gray-400 mb-3">Recent tweets</h2>
+              <h2 className="text-sm font-medium text-gray-400 mb-3">Recent posts</h2>
               <div className="space-y-2">
-                {result.tweets.map((tweet) => (
-                  <TweetCard key={tweet.id} tweet={tweet} />
+                {result.messages.map((msg) => (
+                  <MessageCard key={msg.id} msg={msg} />
                 ))}
               </div>
             </div>
