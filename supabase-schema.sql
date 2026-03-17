@@ -35,3 +35,21 @@ CREATE POLICY "Users can delete own entries"
 -- Create an index for faster queries
 CREATE INDEX entries_user_id_idx ON entries(user_id);
 CREATE INDEX entries_earnings_period_idx ON entries(earnings_period);
+
+-- Portfolio table (one row per user, stores raw ticker text)
+CREATE TABLE portfolio (
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  tickers TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE portfolio ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own portfolio"
+  ON portfolio FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can upsert own portfolio"
+  ON portfolio FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own portfolio"
+  ON portfolio FOR UPDATE USING (auth.uid() = user_id);

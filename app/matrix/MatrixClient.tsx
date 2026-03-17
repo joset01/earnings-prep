@@ -211,7 +211,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
   return (
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-4">
             <NavDropdown currentPage="matrix" />
             <h1 className="text-xl font-bold text-gray-100">Earnings Matrix</h1>
@@ -221,10 +221,10 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
             alt="Logo"
             width={160}
             height={160}
-            className="rounded"
+            className="rounded hidden md:block"
           />
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-400">{userEmail}</span>
+            <span className="text-sm text-gray-400 hidden sm:inline">{userEmail}</span>
             <button
               onClick={handleSignOut}
               className="text-sm text-red-600 hover:text-red-800"
@@ -256,8 +256,8 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
         </div>
 
         {companies.length > 0 && (
-          <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
-            <table className="w-full">
+          <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="bg-gray-700">
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">

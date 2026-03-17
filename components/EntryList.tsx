@@ -81,6 +81,45 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
     });
   };
 
+  const renderNoteWithImages = (noteText: string) => {
+    const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const parts: (string | { type: "image"; alt: string; url: string })[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = imageRegex.exec(noteText)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(noteText.substring(lastIndex, match.index));
+      }
+      parts.push({ type: "image", alt: match[1], url: match[2] });
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < noteText.length) {
+      parts.push(noteText.substring(lastIndex));
+    }
+
+    return parts.map((part, i) => {
+      if (typeof part === "string") {
+        return part.split('\n').map((line, j, arr) => (
+          <span key={`${i}-${j}`}>
+            {line}
+            {j < arr.length - 1 && <br />}
+          </span>
+        ));
+      } else {
+        return (
+          <img
+            key={i}
+            src={part.url}
+            alt={part.alt || "pasted image"}
+            className="max-w-full h-auto rounded my-2 block"
+          />
+        );
+      }
+    });
+  };
+
   if (filteredEntries.length === 0) {
     return (
       <div className="text-center text-gray-400 py-8">
@@ -99,46 +138,46 @@ export default function EntryList({ entries, searchQuery, onEntryDeleted, onEdit
           <div className="divide-y divide-gray-700">
             {groupedEntries[period].map((entry) => (
               <div key={entry.id} className="p-4 hover:bg-gray-700/50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      {entry.flag && (
-                        <span className="text-lg" title="Flagged">
-                          {FLAG_DISPLAY[entry.flag]}
-                        </span>
-                      )}
-                      <div className="flex flex-wrap gap-1">
-                        {entry.ticker.split(",").map((t, i) => (
-                          <span
-                            key={i}
-                            className="font-mono font-bold text-blue-400 bg-blue-900/30 px-1.5 py-0.5 rounded text-sm"
-                          >
-                            {t.trim()}
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-sm text-gray-400">
-                        {formatDate(entry.entry_date)}
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    {entry.flag && (
+                      <span className="text-lg" title="Flagged">
+                        {FLAG_DISPLAY[entry.flag]}
                       </span>
-                      {entry.source && (
-                        <span className="text-sm text-gray-500 italic">
-                          {entry.source}
+                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {entry.ticker.split(",").map((t, i) => (
+                        <span
+                          key={i}
+                          className="font-mono font-bold text-blue-400 bg-blue-900/30 px-1.5 py-0.5 rounded text-sm"
+                        >
+                          {t.trim()}
                         </span>
-                      )}
+                      ))}
                     </div>
-                    <p className="text-gray-300">{entry.note}</p>
-                    {entry.link && (
-                      <a
-                        href={entry.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-400 hover:text-blue-300 underline mt-1 inline-block"
-                      >
-                        {entry.link}
-                      </a>
+                    <span className="text-sm text-gray-400">
+                      {formatDate(entry.entry_date)}
+                    </span>
+                    {entry.source && (
+                      <span className="text-sm text-gray-500 italic">
+                        {entry.source}
+                      </span>
                     )}
                   </div>
-                  <div className="flex gap-3 ml-4">
+                  <div className="text-gray-300">
+                    {renderNoteWithImages(entry.note)}
+                  </div>
+                  {entry.link && (
+                    <a
+                      href={entry.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-400 hover:text-blue-300 underline mt-1 inline-block break-all"
+                    >
+                      {entry.link}
+                    </a>
+                  )}
+                  <div className="flex gap-3 mt-2">
                     <button
                       onClick={() => onEditEntry(entry)}
                       className="text-blue-400 hover:text-blue-300 text-sm"
