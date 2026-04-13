@@ -52,8 +52,10 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
       .map((t) => t.trim().toUpperCase())
       .filter((t) => t.length > 0);
 
-    // Filter out duplicates
-    const existingTickers = companies.map((c) => c.ticker);
+    // Filter out duplicates within the same period
+    const existingTickers = companies
+      .filter((c) => (c.earnings_period ?? null) === (selectedPeriod || null))
+      .map((c) => c.ticker);
     const tickersToAdd = newTickers.filter((t) => !existingTickers.includes(t));
 
     if (tickersToAdd.length === 0) {
