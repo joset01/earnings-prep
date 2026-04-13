@@ -36,6 +36,32 @@ CREATE POLICY "Users can delete own entries"
 CREATE INDEX entries_user_id_idx ON entries(user_id);
 CREATE INDEX entries_earnings_period_idx ON entries(earnings_period);
 
+-- matrix_companies table
+-- NOTE: Run this migration if the table already exists without earnings_period:
+-- ALTER TABLE matrix_companies ADD COLUMN IF NOT EXISTS earnings_period TEXT;
+CREATE TABLE IF NOT EXISTS matrix_companies (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  ticker TEXT NOT NULL,
+  valuation TEXT NOT NULL DEFAULT '',
+  model TEXT NOT NULL DEFAULT '',
+  bloomberg_em TEXT NOT NULL DEFAULT '',
+  evernote TEXT NOT NULL DEFAULT '',
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  earnings_period TEXT
+);
+
+ALTER TABLE matrix_companies ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own matrix companies"
+  ON matrix_companies FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own matrix companies"
+  ON matrix_companies FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own matrix companies"
+  ON matrix_companies FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own matrix companies"
+  ON matrix_companies FOR DELETE USING (auth.uid() = user_id);
+
 -- Portfolio table (one row per user, stores raw ticker text)
 CREATE TABLE portfolio (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,

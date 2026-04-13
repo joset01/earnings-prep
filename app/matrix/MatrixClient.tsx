@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import NavDropdown from "@/components/NavDropdown";
+import { generateEarningsPeriods } from "@/lib/parseEntry";
 
 export interface CompanyRow {
   id?: string;
@@ -14,6 +15,7 @@ export interface CompanyRow {
   bloomberg_em: string;
   evernote: string;
   sort_order?: number;
+  earnings_period?: string;
 }
 
 interface MatrixClientProps {
@@ -27,8 +29,10 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
   const [sortedByTicker, setSortedByTicker] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState("");
   const router = useRouter();
   const supabase = createClient();
+  const periods = generateEarningsPeriods();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -70,6 +74,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
       bloomberg_em: "",
       evernote: "",
       sort_order: maxSortOrder + 1 + i,
+      earnings_period: selectedPeriod || null,
     }));
 
     const { data, error } = await supabase
@@ -208,6 +213,10 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     }
   };
 
+  const filteredCompanies = selectedPeriod
+    ? companies.filter((c) => c.earnings_period === selectedPeriod)
+    : companies;
+
   return (
     <div className="min-h-screen bg-gray-900">
       <header className="bg-gray-800 shadow-sm">
@@ -247,15 +256,27 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
             rows={3}
             className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100 placeholder-gray-400 resize-none mb-3"
           />
-          <button
-            onClick={handleAddCompanies}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Enter
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleAddCompanies}
+              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Enter
+            </button>
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All Periods</option>
+              {periods.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {companies.length > 0 && (
+        {filteredCompanies.length > 0 && (
           <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto">
             <table className="w-full min-w-[600px]">
               <thead>
@@ -285,7 +306,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {companies.map((company, index) => (
+                {filteredCompanies.map((company, index) => (
                   <tr
                     key={company.ticker}
                     className={`hover:bg-gray-700/50 ${dragOverIndex === index ? "bg-gray-600" : ""}`}
