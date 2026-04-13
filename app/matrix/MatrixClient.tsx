@@ -292,6 +292,9 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                     </button>
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
+                    Period
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
                     Valuation
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-200">
@@ -319,6 +322,9 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                   >
                     <td className="px-4 py-3 text-gray-100 font-mono">
                       {company.ticker}
+                    </td>
+                    <td className="px-4 py-3 text-gray-400 text-sm">
+                      {company.earnings_period || "—"}
                     </td>
                     <td className="px-4 py-3 text-gray-100">
                       <select
