@@ -91,81 +91,66 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
     setInputValue("");
   };
 
-  const handleValuationChange = async (ticker: string, value: string) => {
-    const company = companies.find((c) => c.ticker === ticker);
-    if (!company?.id) return;
-
+  const handleValuationChange = async (id: string, value: string) => {
     const { error } = await supabase
       .from("matrix_companies")
       .update({ valuation: value })
-      .eq("id", company.id);
+      .eq("id", id);
 
     if (!error) {
       setCompanies((prev) =>
-        prev.map((c) => (c.ticker === ticker ? { ...c, valuation: value } : c))
+        prev.map((c) => (c.id === id ? { ...c, valuation: value } : c))
       );
     }
   };
 
-  const handleModelChange = async (ticker: string, value: string) => {
-    const company = companies.find((c) => c.ticker === ticker);
-    if (!company?.id) return;
-
+  const handleModelChange = async (id: string, value: string) => {
     const { error } = await supabase
       .from("matrix_companies")
       .update({ model: value })
-      .eq("id", company.id);
+      .eq("id", id);
 
     if (!error) {
       setCompanies((prev) =>
-        prev.map((c) => (c.ticker === ticker ? { ...c, model: value } : c))
+        prev.map((c) => (c.id === id ? { ...c, model: value } : c))
       );
     }
   };
 
-  const handleBloombergEmChange = async (ticker: string, value: string) => {
-    const company = companies.find((c) => c.ticker === ticker);
-    if (!company?.id) return;
-
+  const handleBloombergEmChange = async (id: string, value: string) => {
     const { error } = await supabase
       .from("matrix_companies")
       .update({ bloomberg_em: value })
-      .eq("id", company.id);
+      .eq("id", id);
 
     if (!error) {
       setCompanies((prev) =>
-        prev.map((c) => (c.ticker === ticker ? { ...c, bloomberg_em: value } : c))
+        prev.map((c) => (c.id === id ? { ...c, bloomberg_em: value } : c))
       );
     }
   };
 
-  const handleEvernoteChange = async (ticker: string, value: string) => {
-    const company = companies.find((c) => c.ticker === ticker);
-    if (!company?.id) return;
-
+  const handleEvernoteChange = async (id: string, value: string) => {
     const { error } = await supabase
       .from("matrix_companies")
       .update({ evernote: value })
-      .eq("id", company.id);
+      .eq("id", id);
 
     if (!error) {
       setCompanies((prev) =>
-        prev.map((c) => (c.ticker === ticker ? { ...c, evernote: value } : c))
+        prev.map((c) => (c.id === id ? { ...c, evernote: value } : c))
       );
     }
   };
 
-  const handleDelete = async (ticker: string) => {
-    const company = companies.find((c) => c.ticker === ticker);
-    if (!company?.id) return;
-
+  const handleDelete = async (id: string) => {
     const { error } = await supabase
       .from("matrix_companies")
       .delete()
-      .eq("id", company.id);
+      .eq("id", id);
 
     if (!error) {
-      setCompanies((prev) => prev.filter((c) => c.ticker !== ticker));
+      setCompanies((prev) => prev.filter((c) => c.id !== id));
     }
   };
 
@@ -329,7 +314,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                     <td className="px-4 py-3 text-gray-100">
                       <select
                         value={company.valuation}
-                        onChange={(e) => handleValuationChange(company.ticker, e.target.value)}
+                        onChange={(e) => handleValuationChange(company.id!, e.target.value)}
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>
@@ -341,7 +326,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                     <td className="px-4 py-3 text-gray-100">
                       <select
                         value={company.model}
-                        onChange={(e) => handleModelChange(company.ticker, e.target.value)}
+                        onChange={(e) => handleModelChange(company.id!, e.target.value)}
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>
@@ -353,7 +338,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                     <td className="px-4 py-3 text-gray-100">
                       <select
                         value={company.bloomberg_em}
-                        onChange={(e) => handleBloombergEmChange(company.ticker, e.target.value)}
+                        onChange={(e) => handleBloombergEmChange(company.id!, e.target.value)}
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>
@@ -365,7 +350,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                     <td className="px-4 py-3 text-gray-100">
                       <select
                         value={company.evernote}
-                        onChange={(e) => handleEvernoteChange(company.ticker, e.target.value)}
+                        onChange={(e) => handleEvernoteChange(company.id!, e.target.value)}
                         className="px-2 py-1 bg-gray-700 border border-gray-600 rounded text-gray-100"
                       >
                         <option value="">--</option>
@@ -376,7 +361,7 @@ export default function MatrixClient({ userEmail, initialCompanies }: MatrixClie
                     </td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={() => handleDelete(company.ticker)}
+                        onClick={() => handleDelete(company.id!)}
                         className="text-red-500 hover:text-red-400 text-sm"
                       >
                         Delete
